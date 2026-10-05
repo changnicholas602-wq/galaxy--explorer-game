@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Galaxy Explorer: Types of Galaxies</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#030914;color:#eef6ff;font-family:Arial,system-ui,sans-serif}
+.wrap{max-width:1050px;margin:auto;padding:20px}.hero{background:linear-gradient(135deg,#07111f,#10243b);border:1px solid #263c55;border-radius:18px;padding:22px;position:relative;overflow:hidden}
+.hero:before{content:"";position:absolute;inset:0;opacity:.4;background-image:radial-gradient(circle at 12% 25%,white 1px,transparent 2px),radial-gradient(circle at 72% 35%,white 1px,transparent 2px),radial-gradient(circle at 45% 75%,white 1px,transparent 2px);background-size:170px 140px,230px 180px,190px 160px;animation:drift 12s linear infinite}
+.hero>*{position:relative}.title{font-size:clamp(25px,5vw,42px);font-weight:800;margin:4px 0}.sub{color:#9fb2c9}.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;margin-top:16px}.card{background:#0d1b2d;border:1px solid #263c55;border-radius:16px;padding:16px}.card h2{margin-top:0}.svg{width:100%;border-radius:12px;background:#030914}.buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.btn{background:#12253a;color:#eef6ff;border:1px solid #263c55;border-radius:10px;padding:10px 13px;min-height:44px;font-weight:700;cursor:pointer}.btn:hover{background:#19334d}.active{background:#0f3650;border-color:#7dd3fc}.option{display:block;width:100%;text-align:left;margin:8px 0}.correct{background:#123b32!important;border-color:#34d399!important}.wrong{background:#3d1820!important;border-color:#fb7185!important}.stats{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #1c3045}.progress{height:8px;background:#15263a;border-radius:99px;overflow:hidden;margin:12px 0}.bar{height:100%;background:#7dd3fc;width:0;transition:.3s}.select{width:100%;min-height:44px;background:#091728;color:#eef6ff;border:1px solid #263c55;border-radius:10px;padding:8px;font-size:16px;margin:5px 0 12px}.small{font-size:13px;color:#9fb2c9}@keyframes spin{to{transform:rotate(360deg)}}@keyframes drift{to{background-position:80px 50px,-90px 100px,70px -80px}}@media(max-width:700px){.grid{grid-template-columns:1fr}.wrap{padding:12px}}@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<section class="hero">
+<p class="sub">INTERACTIVE ASTRONOMY LEARNING GAME</p>
+<h1 class="title">🌌 Galaxy Explorer</h1>
+<p class="sub">Explore, identify and classify the three major galaxy types.</p>
+</section>
+
+<div class="grid">
+<section class="card">
+<h2 id="gname">Spiral Galaxy</h2>
+<svg id="svg" class="svg" viewBox="0 0 500 330" role="img" aria-label="Galaxy animation">
+<rect width="500" height="330" fill="#030914"/>
+<g id="visual"></g>
+</svg>
+<p id="ginfo" class="sub">A galaxy with a central bulge and prominent spiral arms. The Milky Way is a spiral galaxy.</p>
+<div class="buttons">
+<button class="btn active" data-g="spiral">🌀 Spiral</button>
+<button class="btn" data-g="elliptical">🥚 Elliptical</button>
+<button class="btn" data-g="irregular">✨ Irregular</button>
+</div>
+</section>
+
+<section class="card">
+<h2>🎮 Galaxy Challenge</h2>
+<div class="stats"><span>Score</span><strong id="score">0</strong></div>
+<div class="stats"><span>Streak</span><strong id="streak">0</strong></div>
+<div class="stats"><span>Question</span><strong><span id="qnum">1</span>/5</strong></div>
+<div class="progress"><div id="bar" class="bar"></div></div>
+<h3 id="question">Which galaxy type has clearly defined spiral arms?</h3>
+<div id="options"></div>
+<p id="feedback" class="sub" aria-live="polite"></p>
+<button id="next" class="btn" disabled>Next Question →</button>
+</section>
+</div>
+
+<section class="card" style="margin-top:16px">
+<h2>⚙️ Advanced Settings</h2>
+<div class="grid">
+<div><label class="small">Difficulty</label>
+<select id="difficulty" class="select">
+<option value="easy">Easy — direct clues</option>
+<option value="medium" selected>Medium — concept clues</option>
+<option value="hard">Hard — scientific reasoning</option>
+</select></div>
+<div><label class="small">Animation speed</label>
+<select id="speed" class="select">
+<option value="slow">Slow</option><option value="normal" selected>Normal</option><option value="fast">Fast</option>
+</select></div>
+</div>
+<div class="buttons">
+<button id="motion" class="btn active">✨ Animation On</button>
+<button id="reset" class="btn">↻ Restart Game</button>
+</div>
+<p class="small">Tip: Read each scientific clue carefully. The game rewards understanding, not memorisation.</p>
+</section>
+</div>
+
+<script>
+const info={
+spiral:{name:"Spiral Galaxy",text:"A galaxy with a central bulge and prominent spiral arms. The Milky Way is a spiral galaxy."},
+elliptical:{name:"Elliptical Galaxy",text:"A smooth, rounded or oval-shaped galaxy. It generally has little visible gas and dust for forming new stars."},
+irregular:{name:"Irregular Galaxy",text:"A galaxy without a clear regular spiral or elliptical shape. Gravitational interactions can contribute to its disturbed appearance."}
+};
+const visual=document.getElementById("visual"),gname=document.getElementById("gname"),ginfo=document.getElementById("ginfo");
+function draw(type){
+ visual.innerHTML="";
+ const ns="http://www.w3.org/2000/svg",cx=250,cy=165;
+ if(type==="spiral"){
+  for(let a=0;a<2;a++){let p=document.createElementNS(ns,"path"),d="";
+   for(let i=0;i<=180;i++){let t=i/180*5.8*Math.PI+a*Math.PI,r=8+i*1.15,x=cx+Math.cos(t)*r,y=cy+Math.sin(t)*r*.55;d+=(i?"L":"M")+x.toFixed(1)+" "+y.toFixed(1)}
+   p.setAttribute("d",d);p.setAttribute("fill","none");p.setAttribute("stroke",a?"#c084fc":"#7dd3fc");p.setAttribute("stroke-width","14");p.setAttribute("stroke-linecap","round");p.setAttribute("opacity",".55");visual.appendChild(p)
+  }
+  let g=document.createElementNS(ns,"g");g.classList.add("galaxy");g.innerHTML='<ellipse cx="250" cy="165" rx="48" ry="30" fill="#fef3c7" opacity=".9"/><circle cx="250" cy="165" r="17" fill="#fff7ed"/>';visual.appendChild(g);
+ }else if(type==="elliptical"){
+  let g=document.createElementNS(ns,"g");g.classList.add("galaxy");g.style.animationDuration="32s";g.innerHTML='<ellipse cx="250" cy="165" rx="150" ry="82" fill="#c084fc" opacity=".22"/><ellipse cx="250" cy="165" rx="112" ry="62" fill="#fbbf24" opacity=".26"/><ellipse cx="250" cy="165" rx="55" ry="35" fill="#fff7ed" opacity=".9"/>';visual.appendChild(g);
+ }else{
+  let g=document.createElementNS(ns,"g");g.classList.add("galaxy");g.style.animationDuration="9s";
+  for(let i=0;i<55;i++){let c=document.createElementNS(ns,"circle");c.setAttribute("cx",100+Math.random()*300);c.setAttribute("cy",75+Math.random()*180);c.setAttribute("r",2+Math.random()*6);c.setAttribute("fill",["#7dd3fc","#c084fc","#fbbf24"][i%3]);g.appendChild(c)}
+  visual.appendChild(g);
+ }
+}
+document.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-g]").forEach(x=>x.classList.remove("active"));b.classList.add("active");let t=b.dataset.g;gname.textContent=info[t].name;ginfo.textContent=info[t].text;draw(t)});
+draw("spiral");
+
+const banks={
+easy:[
+["Which galaxy has spiral arms?","spiral","Spiral galaxies have prominent arms."],
+["Which type is smooth and oval?","elliptical","Elliptical galaxies have smooth oval or rounded shapes."],
+["Which type lacks a regular shape?","irregular","Irregular galaxies do not have a regular spiral or elliptical structure."],
+["The Milky Way is mainly classified as what type?","spiral","The Milky Way is a barred spiral galaxy."],
+["Which type generally has less visible gas and dust?","elliptical","Elliptical galaxies generally contain less cold gas and dust."]
+],
+medium:[
+["A galaxy shows a central bulge and curved arms. Classify it.","spiral","Curved arms around a central bulge are characteristic of spiral galaxies."],
+["A galaxy appears smooth, rounded and lacks obvious arms.","elliptical","The smooth, rounded appearance points to an elliptical galaxy."],
+["A galaxy has a disturbed shape with no clear symmetry.","irregular","Irregular galaxies lack the organised structure of spirals and ellipticals."],
+["Which type is most directly associated with organised disk-and-arm structure?","spiral","Spiral galaxies have an organised disk with arms."],
+["Which type is least likely to show prominent spiral arms?","elliptical","Elliptical galaxies do not have prominent spiral arms."]
+],
+hard:[
+["An object has a flattened rotating disk, central stellar concentration and density waves producing arms.","spiral","The disk and spiral structure indicate a spiral galaxy."],
+["A system is dominated by an old stellar population and has a smooth three-dimensional distribution.","elliptical","Smooth structure and an old stellar population are characteristic of elliptical galaxies."],
+["A galaxy appears strongly asymmetric after a gravitational interaction and cannot be assigned a normal spiral or elliptical structure.","irregular","A strongly disturbed system without a regular morphology can be classified as irregular."],
+["Which morphology most strongly implies a dynamically organised disk?","spiral","A disk is a defining structural feature of spiral galaxies."],
+["Which type is associated with the least obvious large-scale morphological organisation?","irregular","Irregular galaxies lack a clear regular large-scale morphology."]
+]};
+let bank=banks.medium,idx=0,score=0,streak=0,answered=false;
+const q=document.getElementById("question"),opts=document.getElementById("options"),feedback=document.getElementById("feedback"),next=document.getElementById("next");
+function load(){
+ answered=false;next.disabled=true;feedback.textContent="";
+ let item=bank[idx];q.textContent=item[0];document.getElementById("qnum").textContent=idx+1;document.getElementById("bar").style.width=(idx/5*100)+"%";opts.innerHTML="";
+ ["spiral","elliptical","irregular"].sort(()=>Math.random()-.5).forEach(t=>{let b=document.createElement("button");b.className="btn option";b.textContent=info[t].name;b.onclick=()=>answer(b,t,item);opts.appendChild(b)});
+}
+function answer(btn,t,item){
+ if(answered)return;answered=true;let ok=t===item[1];
+ if(ok){score+=100+streak*25;streak++;btn.classList.add("correct");feedback.textContent="✓ Correct! "+item[2]}
+ else{streak=0;btn.classList.add("wrong");feedback.textContent="✗ Not quite. "+item[2];[...opts.children].forEach(b=>{if(b.textContent===info[item[1]].name)b.classList.add("correct")})}
+ document.getElementById("score").textContent=score;document.getElementById("streak").textContent=streak;next.disabled=false;
+}
+next.onclick=()=>{if(!answered)return;if(idx<4){idx++;load()}else{q.textContent="🏆 Mission Complete!";opts.innerHTML="";feedback.textContent="Final score: "+score+". Restart to attempt the challenge again.";next.disabled=true;document.getElementById("bar").style.width="100%"}};
+document.getElementById("difficulty").onchange=e=>{bank=banks[e.target.value];idx=0;score=0;streak=0;document.getElementById("score").textContent=0;document.getElementById("streak").textContent=0;load()};
+document.getElementById("speed").onchange=e=>{document.querySelectorAll(".galaxy").forEach(g=>g.style.animationDuration=e.target.value==="slow"?"32s":e.target.value==="fast"?"9s":"18s")};
+document.getElementById("motion").onclick=e=>{let on=e.currentTarget.classList.toggle("active");e.currentTarget.textContent=on?"✨ Animation On":"⏸ Animation Off";document.querySelectorAll(".galaxy,.hero:before").forEach(x=>x.style.animationPlayState=on?"running":"paused")};
+document.getElementById("reset").onclick=()=>{idx=0;score=0;streak=0;document.getElementById("score").textContent=0;document.getElementById("streak").textContent=0;load()};
+load();
+</script>
+</body>
+</html>
